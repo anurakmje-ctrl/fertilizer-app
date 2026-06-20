@@ -3,207 +3,450 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>โปรแกรมคำนวณสูตรปุ๋ยผสม</title>
+    <title>ระบบบริหารจัดการและคำนวณสูตรปุ๋ยอัจฉริยะ</title>
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background-color: #f0f4f8; 
+            background-color: #f0f4f1; 
             color: #333;
-            padding: 20px; 
+            padding: 15px; 
             margin: 0;
         }
         .container { 
-            max-width: 600px; 
+            max-width: 700px; 
             margin: auto; 
             background: #ffffff; 
-            padding: 30px; 
-            border-radius: 12px; 
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1); 
+            padding: 20px; 
+            border-radius: 14px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.06); 
         }
         h2 { 
             text-align: center; 
-            color: #2e7d32; 
+            color: #1b5e20; 
             margin-top: 0;
-        }
-        .desc {
-            text-align: center;
-            color: #555;
             margin-bottom: 20px;
+        }
+        /* Tab Styles */
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 20px;
+            gap: 5px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 12px 5px;
+            background: #f5f5f5;
+            border: none;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            color: #666;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .tab-btn.active {
+            background: #2e7d32;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        /* Table Layout */
+        .table-wrapper {
+            max-height: 380px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 15px;
         }
         table { 
             width: 100%; 
             border-collapse: collapse; 
-            margin-top: 10px; 
         }
         th, td { 
-            padding: 12px; 
+            padding: 10px 8px; 
             border-bottom: 1px solid #e0e0e0; 
             text-align: center; 
+            font-size: 14px;
         }
         th {
-            background-color: #f1f8e9;
-            color: #33691e;
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            position: sticky;
+            top: 0;
+            z-index: 1;
         }
         td:first-child {
             text-align: left;
-            font-weight: bold;
+            font-weight: 500;
         }
         input[type="number"] { 
-            width: 70px; 
-            padding: 8px; 
+            width: 75px; 
+            padding: 6px; 
             text-align: center; 
-            border: 1px solid #ccc;
+            border: 1px solid #cccccc;
             border-radius: 4px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        .input-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #444;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
         }
         .btn { 
             display: block; 
             width: 100%; 
-            padding: 15px; 
-            background-color: #4caf50; 
+            padding: 14px; 
+            background-color: #2e7d32; 
             color: white; 
             border: none; 
             border-radius: 8px; 
-            font-size: 18px; 
+            font-size: 16px; 
             font-weight: bold;
-            margin-top: 25px; 
             cursor: pointer; 
-            transition: background 0.3s;
+            margin-top: 15px;
         }
-        .btn:hover { 
-            background-color: #388e3c; 
+        .btn:hover { background-color: #1b5e20; }
+        /* Results Card */
+        .result-box { 
+            margin-top: 20px; 
+            padding: 18px; 
+            border-radius: 8px;
         }
-        .result { 
-            margin-top: 25px; 
-            padding: 20px; 
-            background-color: #e8f5e9; 
-            border-left: 6px solid #2e7d32; 
-            border-radius: 4px;
-        }
-        .result h3 { 
-            margin: 0 0 10px 0; 
-            color: #1b5e20; 
-        }
+        .result-forward { background-color: #e8f5e9; border-left: 6px solid #2e7d32; }
+        .result-reverse { background-color: #e3f2fd; border-left: 6px solid #1565c0; }
+        .result-drone { background-color: #fff3e0; border-left: 6px solid #ef6c00; }
+        
         .formula-output {
-            font-size: 1.8em; 
+            font-size: 2.2em; 
             font-weight: bold; 
-            color: #d32f2f;
             text-align: center;
             display: block;
-            margin: 10px 0;
+            margin: 8px 0;
         }
-        .note { 
-            font-size: 13px; 
-            color: #777; 
-            margin-top: 15px; 
-            text-align: center;
+        .c-forward { color: #2e7d32; }
+        .c-reverse { color: #1565c0; }
+        
+        .alert-warn {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            margin-top: 10px;
+            border: 1px solid #ffcdd2;
         }
+        .note { font-size: 12px; color: #666; text-align: center; margin-top: 15px; line-height: 1.4; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>โปรแกรมคำนวณสูตรปุ๋ยผสม</h2>
-        <p class="desc">กำหนดมาตรฐาน: ปุ๋ย 1 ลูก = 50 กิโลกรัม</p>
+        <h2>ระบบบริหารจัดการและคำนวณสูตรปุ๋ย</h2>
         
-        <table>
-            <thead>
-                <tr>
-                    <th>ชนิดแม่ปุ๋ย</th>
-                    <th>N-P-K</th>
-                    <th>จำนวนที่ใช้ (ลูก)</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>ยูเรีย (Urea)</td>
-                    <td>46-0-0</td>
-                    <td><input type="number" id="qty-46-0-0" min="0" step="0.1" value="0"></td>
-                </tr>
-                <tr>
-                    <td>ไดแอมโมเนียมฟอสเฟต (DAP)</td>
-                    <td>18-46-0</td>
-                    <td><input type="number" id="qty-18-46-0" min="0" step="0.1" value="0"></td>
-                </tr>
-                <tr>
-                    <td>โพแทสเซียมคลอไรด์ (MOP)</td>
-                    <td>0-0-60</td>
-                    <td><input type="number" id="qty-0-0-60" min="0" step="0.1" value="0"></td>
-                </tr>
-                <tr>
-                    <td>แอมโมเนียมซัลเฟต</td>
-                    <td>21-0-0</td>
-                    <td><input type="number" id="qty-21-0-0" min="0" step="0.1" value="0"></td>
-                </tr>
-                <tr>
-                    <td>ฟิลเลอร์ (สารเติมเต็ม)</td>
-                    <td>0-0-0</td>
-                    <td><input type="number" id="qty-0-0-0" min="0" step="0.1" value="0"></td>
-                </tr>
-            </tbody>
-        </table>
-        
-        <button class="btn" onclick="calculateFertilizer()">คำนวณสูตรปุ๋ย</button>
-
-        <div class="result" id="result-box" style="display:none;">
-            <h3>ผลลัพธ์การผสม:</h3>
-            <span class="formula-output" id="final-formula"></span>
-            <p style="margin-bottom: 5px;"><strong>น้ำหนักรวมทั้งหมด:</strong> <span id="total-weight"></span> กิโลกรัม</p>
-            <p style="margin-top: 0;"><strong>จำนวนปุ๋ยรวม:</strong> <span id="total-bags"></span> ลูก</p>
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('tab-forward')">1. ผสมปุ๋ย + ต้นทุน</button>
+            <button class="tab-btn" onclick="switchTab('tab-reverse')">2. สั่งสูตรปุ๋ยย้อนกลับ</button>
+            <button class="tab-btn" onclick="switchTab('tab-drone')">3. คำนวณพื้นที่ & โดรน</button>
         </div>
-        
-        <p class="note">* สามารถใส่ทศนิยมได้ (เช่น 0.5 ลูก หรือ 1.5 ลูก) <br>สูตรปุ๋ยสุทธิจะถูกปัดเศษทศนิยม 1 ตำแหน่งเพื่อให้ง่ายต่อการดู</p>
+
+        <div id="tab-forward" class="tab-content active">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>สูตรปุ๋ย</th>
+                            <th>N-P-K</th>
+                            <th>จำนวน (ลูก)</th>
+                            <th>ราคา/ลูก (บาท)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="forward-table-body">
+                        </tbody>
+                </table>
+            </div>
+            <button class="btn" onclick="calculateForward()">คำนวณผลลัพธ์การผสม</button>
+            
+            <div class="result-box result-forward" id="res-forward-box" style="display:none;">
+                <h3 style="margin:0; color:#1b5e20;">สูตรปุ๋ยสุทธิที่ได้:</h3>
+                <span class="formula-output c-forward" id="f-res-formula">0-0-0</span>
+                <p style="margin: 5px 0;"><strong>น้ำหนักรวม:</strong> <span id="f-res-weight"></span> กิโลกรัม (<span id="f-res-bags"></span> ลูก)</p>
+                <p style="margin: 5px 0; color:#2e7d32;"><strong>ต้นทุนรวมทั้งหมด:</strong> <span id="f-res-totalcost"></span> บาท</p>
+                <p style="margin: 5px 0; font-weight:bold;"><strong>ต้นทุนเฉลี่ย:</strong> <span id="f-res-avgcost"></span> บาท / กระสอบ</p>
+            </div>
+        </div>
+
+        <div id="tab-reverse" class="tab-content">
+            <div class="input-group">
+                <label>1. ระบุสูตรปุ๋ยที่ต้องการ (N - P - K)</label>
+                <div class="grid-3">
+                    <input type="number" id="rev-target-n" placeholder="N" min="0" value="15">
+                    <input type="number" id="rev-target-p" placeholder="P" min="0" value="5">
+                    <input type="number" id="rev-target-k" placeholder="K" min="0" value="35">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>2. จำนวนปุ๋ยที่ต้องการใช้ (ลูก/กระสอบ 50 กก.)</label>
+                <input type="number" id="rev-target-bags" value="1" min="0.1" step="0.1">
+            </div>
+            
+            <h4 style="margin-bottom:8px; color:#1565c0;">ระบุราคาแม่ปุ๋ยเพื่อคิดต้นทุน (บาท/กระสอบ)</h4>
+            <div class="grid-3" style="margin-bottom:15px;">
+                <div><label style="font-size:12px;">46-0-0</label><input type="number" id="p-46" value="850" style="width:100%; padding:6px; border-radius:4px; border:1px solid #ccc;"></div>
+                <div><label style="font-size:12px;">18-46-0</label><input type="number" id="p-18" value="1150" style="width:100%; padding:6px; border-radius:4px; border:1px solid #ccc;"></div>
+                <div><label style="font-size:12px;">0-0-60</label><input type="number" id="p-60" value="950" style="width:100%; padding:6px; border-radius:4px; border:1px solid #ccc;"></div>
+            </div>
+
+            <button class="btn" style="background-color:#1565c0;" onclick="calculateReverse()">คำนวณสัดส่วนแม่ปุ๋ยย้อนกลับ</button>
+
+            <div class="result-box result-reverse" id="res-reverse-box" style="display:none;">
+                <h3 style="margin:0; color:#0d47a1;">ปริมาณสัดส่วนที่ต้องใช้จริง:</h3>
+                <div id="rev-ingredients" style="margin:10px 0; font-size:15px; line-height:1.6;"></div>
+                <div id="rev-cost-report" style="border-top:1px solid #bdc3c7; padding-top:8px; font-weight:bold; color:#1565c0;"></div>
+            </div>
+        </div>
+
+        <div id="tab-drone" class="tab-content">
+            <div class="input-group">
+                <label>1. จำนวนพื้นที่เพาะปลูก (ไร่)</label>
+                <input type="number" id="drone-rai" value="10" min="1">
+            </div>
+            <div class="input-group">
+                <label>2. ปริมาณปุ๋ยที่ต้องการใส่ต่อ 1 ไร่ (กิโลกรัม / ไร่)</label>
+                <input type="number" id="drone-fert-per-rai" value="1" min="0.1" step="0.1" placeholder="เช่น พ่นยูเรียทางใบใส่ 1-2 กก.">
+            </div>
+            <div class="input-group">
+                <label>3. อัตราการใช้น้ำของโดรนหรือเครื่องพ่น (ลิตร / ไร่)</label>
+                <input type="number" id="drone-water-per-rai" value="5" min="1" placeholder="โดรนทั่วไปมักใช้ 5 ลิตรต่อไร่">
+            </div>
+
+            <button class="btn" style="background-color:#ef6c00;" onclick="calculateDrone()">คำนวณปริมาณงานพ่นและเช็คความปลอดภัย</button>
+
+            <div class="result-box result-drone" id="res-drone-box" style="display:none;">
+                <h3 style="margin:0; color:#e65100;">สรุปแผนการเตรียมถังพ่น:</h3>
+                <p style="font-size:16px; margin:8px 0;">ต้องใช้ปุ๋ยรวมทั้งหมด: <strong style="color:red; font-size:1.3em;" id="d-total-fert"></strong> กิโลกรัม</p>
+                <p style="font-size:16px; margin:8px 0;">ต้องใช้น้ำรวมทั้งหมด: <strong style="color:#1565c0; font-size:1.3em;" id="d-total-water"></strong> ลิตร</p>
+                <p style="font-size:15px; margin:8px 0; border-top:1px dashed #ccc; padding-top:8px;">
+                    ความเข้มข้นของสารละลายปุ๋ย: <strong id="d-percent"></strong> %
+                </p>
+                <div id="drone-safety-alert"></div>
+            </div>
+        </div>
+
+        <p class="note">น้ำหนักปุ๋ยอ้างอิงมาตรฐาน 50 กิโลกรัมต่อ 1 ลูก<br>ระบบเวอร์ชัน V4 ครอบคลุมการผสมปุ๋ย ต้นทุน และการบินโดรนพ่นทางใบ</p>
     </div>
 
     <script>
-        function calculateFertilizer() {
-            const standardWeight = 50; 
+        // รายชื่อสูตรปุ๋ยทั้งหมดที่มีในระบบ
+        const fertilizerData = [
+            { name: "ยูเรีย (Urea)", n: 46, p: 0, k: 0, formula: "46-0-0" },
+            { name: "ไดแอมโมเนียมฟอสเฟต (DAP)", n: 18, p: 46, k: 0, formula: "18-46-0" },
+            { name: "โพแทสเซียมคลอไรด์ (MOP)", n: 0, p: 0, k: 60, formula: "0-0-60" },
+            { name: "แอมโมเนียมซัลเฟต", n: 21, p: 0, k: 0, formula: "21-0-0" },
+            { name: "ปุ๋ยสูตรสำเร็จ 30-20-0", n: 30, p: 20, k: 0, formula: "30-20-0" },
+            { name: "ปุ๋ยสูตรสำเร็จ 20-20-0", n: 20, p: 20, k: 0, formula: "20-20-0" },
+            { name: "ปุ๋ยสูตรเสมอ 16-16-16", n: 16, p: 16, k: 16, formula: "16-16-16" },
+            { name: "ปุ๋ยสูตรเสมอ 15-15-15", n: 15, p: 15, k: 15, formula: "15-15-15" },
+            { name: "ปุ๋ยสูตรสำเร็จ 15-5-25", n: 15, p: 5, k: 25, formula: "15-5-25" },
+            { name: "ปุ๋ยสูตรสำเร็จ 40-0-0", n: 40, p: 0, k: 0, formula: "40-0-0" },
+            { name: "ปุ๋ยสูตรสำเร็จ 30-0-0", n: 30, p: 0, k: 0, formula: "30-0-0" },
+            { name: "ปุ๋ยสูตรสำเร็จ 25-7-7", n: 25, p: 7, k: 7, formula: "25-7-7" },
+            { name: "ปุ๋ยสูตรสำเร็จ 21-4-21", n: 21, p: 4, k: 21, formula: "21-4-21" },
+            { name: "ปุ๋ยสูตรสำเร็จ 20-8-20", n: 20, p: 8, k: 20, formula: "20-8-20" },
+            { name: "ปุ๋ยสูตรสำเร็จ 20-8-8", n: 20, p: 8, k: 8, formula: "20-8-8" },
+            { name: "ปุ๋ยสูตรสำเร็จ 18-8-8", n: 18, p: 8, k: 8, formula: "18-8-8" },
+            { name: "ปุ๋ยสูตรสำเร็จ 16-20-0", n: 16, p: 20, k: 0, formula: "16-20-0" },
+            { name: "ฟิลเลอร์ / สารเติมเต็ม", n: 0, p: 0, k: 0, formula: "0-0-0" }
+        ];
 
-            // ข้อมูลแม่ปุ๋ย: [N%, P%, K%, ไอดีของช่องกรอก]
-            const fertilizers = [
-                { n: 46, p: 0, k: 0, id: 'qty-46-0-0' },
-                { n: 18, p: 46, k: 0, id: 'qty-18-46-0' },
-                { n: 0, p: 0, k: 60, id: 'qty-0-0-60' },
-                { n: 21, p: 0, k: 0, id: 'qty-21-0-0' },
-                { n: 0, p: 0, k: 0, id: 'qty-0-0-0' } // Filler
-            ];
+        // สร้างแถวตารางในแท็บที่ 1 อัตโนมัติเมื่อเปิดหน้าเว็บ
+        window.onload = function() {
+            const tbody = document.getElementById('forward-table-body');
+            fertilizerData.forEach((fert, index) => {
+                let row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${fert.name}</td>
+                    <td><strong>${fert.formula}</strong></td>
+                    <td><input type="number" id="f-qty-${index}" min="0" step="0.1" value="0"></td>
+                    <td><input type="number" id="f-price-${index}" min="0" placeholder="0"></td>
+                `;
+                tbody.appendChild(row);
+            });
+        };
 
-            let totalN_kg = 0;
-            let totalP_kg = 0;
-            let totalK_kg = 0;
-            let totalBags = 0;
+        // ฟังก์ชันสลับแท็บ
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
 
-            // วนลูปคำนวณน้ำหนักธาตุอาหารแต่ละตัว
-            fertilizers.forEach(fert => {
-                let bags = parseFloat(document.getElementById(fert.id).value) || 0;
+        // คำนวณแท็บ 1: ผสมปุ๋ยเดินหน้า + คิดต้นทุน
+        function calculateForward() {
+            let totalN = 0, totalP = 0, totalK = 0, totalBags = 0, totalCost = 0;
+            const weightPerBag = 50;
+
+            fertilizerData.forEach((fert, index) => {
+                let bags = parseFloat(document.getElementById(`f-qty-${index}`).value) || 0;
+                let price = parseFloat(document.getElementById(`f-price-${index}`).value) || 0;
+
                 if (bags > 0) {
                     totalBags += bags;
-                    let fertWeight = bags * standardWeight;
-                    totalN_kg += fertWeight * (fert.n / 100);
-                    totalP_kg += fertWeight * (fert.p / 100);
-                    totalK_kg += fertWeight * (fert.k / 100);
+                    let w = bags * weightPerBag;
+                    totalN += w * (fert.n / 100);
+                    totalP += w * (fert.p / 100);
+                    totalK += w * (fert.k / 100);
+                    totalCost += bags * price;
                 }
             });
 
             if (totalBags === 0) {
-                alert("กรุณาระบุจำนวนปุ๋ยอย่างน้อย 1 ช่อง (เช่น 0.5 หรือ 1)");
+                alert("กรุณากรอกจำนวนลูกของปุ๋ยอย่างน้อย 1 รายการก่อนครับ");
                 return;
             }
 
-            // น้ำหนักรวม (กก.)
-            let totalWeight = totalBags * standardWeight;
+            let totalWeight = totalBags * weightPerBag;
+            let finalN = (totalN / totalWeight) * 100;
+            let finalP = (totalP / totalWeight) * 100;
+            let finalK = (totalK / totalWeight) * 100;
 
-            // เทียบบัญญัติไตรยางศ์เพื่อหาเปอร์เซ็นต์ N-P-K ต่อ 100 กก.
-            let finalN = (totalN_kg / totalWeight) * 100;
-            let finalP = (totalP_kg / totalWeight) * 100;
-            let finalK = (totalK_kg / totalWeight) * 100;
+            document.getElementById('f-res-formula').innerText = `${finalN.toFixed(1)} - ${finalP.toFixed(1)} - ${finalK.toFixed(1)}`;
+            document.getElementById('f-res-weight').innerText = totalWeight.toLocaleString();
+            document.getElementById('f-res-bags').innerText = totalBags.toFixed(1);
+            document.getElementById('f-res-totalcost').innerText = totalCost.toLocaleString();
+            document.getElementById('f-res-avgcost').innerText = totalCost > 0 ? (totalCost / totalBags).toFixed(1) : "0.0";
+            
+            document.getElementById('res-forward-box').style.display = 'block';
+        }
 
-            // แสดงผล
-            document.getElementById('final-formula').innerText = 
-                finalN.toFixed(1) + " - " + finalP.toFixed(1) + " - " + finalK.toFixed(1);
-            document.getElementById('total-weight').innerText = totalWeight.toFixed(2);
-            document.getElementById('total-bags').innerText = totalBags.toFixed(2);
+        // คำนวณแท็บ 2: สั่งสูตรปุ๋ยย้อนกลับ (Target Formula Finder)
+        function calculateReverse() {
+            let targetN = parseFloat(document.getElementById('rev-target-n').value) || 0;
+            let targetP = parseFloat(document.getElementById('rev-target-p').value) || 0;
+            let targetK = parseFloat(document.getElementById('rev-target-k').value) || 0;
+            let targetBags = parseFloat(document.getElementById('rev-target-bags').value) || 0;
 
-            // โชว์กล่องผลลัพธ์
-            document.getElementById('result-box').style.display = 'block';
+            if (targetBags <= 0) { alert("กรุณาระบุจำนวนกระสอบปุ๋ยเป้าหมายด้วยครับ"); return; }
+
+            let totalWeight = targetBags * 50;
+            let reqN = (targetN / 100) * totalWeight;
+            let reqP = (targetP / 100) * totalWeight;
+            let reqK = (targetK / 100) * totalWeight;
+
+            // คำนวณหาแม่ปุ๋ยโพแทสเซียม (0-0-60)
+            let mopWeight = reqK / 0.60;
+
+            // คำนวณหาแม่ปุ๋ยฟอสเฟต DAP (18-46-0)
+            let dapWeight = reqP / 0.46;
+            let nFromDap = dapWeight * 0.18;
+
+            // คำนวณหาแม่ปุ๋ยยูเรีย (46-0-0) จากไนโตรเจนส่วนที่เหลือ
+            let remN = reqN - nFromDap;
+            let ureaWeight = 0;
+            if (remN > 0) {
+                ureaWeight = remN / 0.46;
+            }
+
+            let totalIngredientsWeight = mopWeight + dapWeight + ureaWeight;
+            let fillerWeight = totalWeight - totalIngredientsWeight;
+
+            const resDiv = document.getElementById('rev-ingredients');
+            
+            // กรณีสูตรเข้มข้นเกินไปจนทำไม่ได้จากแม่ปุ๋ยพื้นฐาน หรือ DAP ปล่อย N เกินเป้าหมาย
+            if (fillerWeight < -0.01 || remN < -0.01) {
+                resDiv.innerHTML = `<div class="alert-warn">❌ ไม่สามารถผสมได้จริง! สูตรที่ระบุมีความเข้มข้นสูงเกินไป หรือมีสัดส่วน N และ P ไม่สัมพันธ์กับแม่ปุ๋ยหลัก กรุณาลดตัวเลขสูตรลง หรือเพิ่มจำนวนกระสอบเป้าหมายครับ</div>`;
+                document.getElementById('rev-cost-report').innerText = "";
+                document.getElementById('res-reverse-box').style.display = 'block';
+                return;
+            }
+
+            // คำนวณราคาต้นทุน
+            let pUrea = parseFloat(document.getElementById('p-46').value) || 0;
+            let pDap = parseFloat(document.getElementById('p-18').value) || 0;
+            let pMop = parseFloat(document.getElementById('p-60').value) || 0;
+
+            let ureaBags = ureaWeight / 50;
+            let dapBags = dapWeight / 50;
+            let mopBags = mopWeight / 50;
+            let fillerBags = fillerWeight / 50;
+
+            let totalCost = (ureaBags * pUrea) + (dapBags * pDap) + (mopBags * pMop);
+
+            resDiv.innerHTML = `
+                🔹 <strong>ยูเรีย (46-0-0):</strong> ${ureaWeight.toFixed(1)} กก. (≈ ${ureaBags.toFixed(2)} ลูก)<br>
+                🔹 <strong>DAP (18-46-0):</strong> ${dapWeight.toFixed(1)} กก. (≈ ${dapBags.toFixed(2)} ลูก)<br>
+                🔹 <strong>โพแทสเซียม (0-0-60):</strong> ${mopWeight.toFixed(1)} กก. (≈ ${mopBags.toFixed(2)} ลูก)<br>
+                🔹 <strong>สารเติมเต็ม/ฟิลเลอร์:</strong> ${fillerWeight.toFixed(1)} กก. (≈ ${fillerBags.toFixed(2)} ลูก)
+            `;
+
+            document.getElementById('rev-cost-report').innerHTML = `
+                ต้นทุนรวมทั้งหมด: ${totalCost.toLocaleString(undefined, {maximumFractionDigits:1})} บาท <br>
+                เฉลี่ยตกกระสอบละ: ${(totalCost / targetBags).toFixed(1)} บาท
+            `;
+
+            document.getElementById('res-reverse-box').style.display = 'block';
+        }
+
+        // คำนวณแท็บ 3: สำหรับโดรนและการฉีดพ่น (Drone & Area Safety)
+        function calculateDrone() {
+            let rai = parseFloat(document.getElementById('drone-rai').value) || 0;
+            let fertPerRai = parseFloat(document.getElementById('drone-fert-per-rai').value) || 0;
+            let waterPerRai = parseFloat(document.getElementById('drone-water-per-rai').value) || 0;
+
+            if (rai <= 0 || fertPerRai <= 0 || waterPerRai <= 0) {
+                alert("กรุณากรอกข้อมูลตัวเลขให้ครบถ้วนและถูกต้องครับ");
+                return;
+            }
+
+            let totalFert = fertPerRai * rai;
+            let totalWater = waterPerRai * rai;
+
+            // คำนวณความเข้มข้นสารละลายปุ๋ย (%) โดยประมาณ (ปุ๋ย 1 กก. ต่อน้ำ 1 ลิตร = 100%)
+            let concentration = (totalFert / totalWater) * 100;
+
+            document.getElementById('d-total-fert').innerText = totalFert.toLocaleString(undefined, {maximumFractionDigits: 2});
+            document.getElementById('d-total-water').innerText = totalWater.toLocaleString(undefined, {maximumFractionDigits: 1});
+            document.getElementById('d-percent').innerText = concentration.toFixed(1);
+
+            const alertDiv = document.getElementById('drone-safety-alert');
+            
+            // ระบบเช็คความปลอดภัยความเข้มข้นปุ๋ยพ่นทางใบ/โดรน
+            if (concentration > 4) {
+                alertDiv.innerHTML = `
+                    <div class="alert-warn">
+                        ⚠️ ระวัง! ความเข้มข้นสูงเกินไป (${concentration.toFixed(1)}%) <br>
+                        สำหรับการพ่นปุ๋ยทางใบหรือบินโดรน ความเข้มข้นปุ๋ยเคมีไม่ควรเกิน 2% - 3% เนื่องจากน้ำมีน้อย หากเข้มข้นเกินไปอาจทำให้ "ใบข้าวลวกหรือไหม้เกรียม" ได้ แนะนำให้เพิ่มปริมาณน้ำต่อไร่ หรือลดปริมาณปุ๋ยต่อถังลงครับ
+                    </div>`;
+            } else {
+                alertDiv.innerHTML = `
+                    <div style="background-color: #e8f5e9; color: #2e7d32; padding: 10px; border-radius: 6px; font-weight: bold; margin-top: 10px; border: 1px solid #c8e6c9;">
+                        ✅ ความเข้มข้นอยู่ในเกณฑ์ปลอดภัย (${concentration.toFixed(1)}%) สามารถนำไปพ่นทางใบหรือบินโดรนได้ตามปกติครับ
+                    </div>`;
+            }
+
+            document.getElementById('res-drone-box').style.display = 'block';
         }
     </script>
 </body>
